@@ -177,9 +177,7 @@ export function ParseSearchQuery(query: SearchQuery) {
 
   // Parsing the gender
   for (const keyword of keywords!) {
-    console.log("Checking keyword against genders:", keyword);
     if (GENDER_MAP[keyword]) {
-      console.log("Matched gender keyword:", keyword);
       queryOptions.gender = GENDER_MAP[keyword];
       matched = true;
       break;
@@ -191,7 +189,6 @@ export function ParseSearchQuery(query: SearchQuery) {
     keywords?.join(" ").includes("men and women") ||
     keywords?.join(" ").includes("boys and girls")
   ) {
-    console.log("Matched combined gender keywords:", keywords.join(" "));
     delete queryOptions.gender;
   }
 
@@ -225,7 +222,6 @@ export function ParseSearchQuery(query: SearchQuery) {
 
   // Parsing the country
   for (const keyword of keywords!) {
-    console.log("Checking keyword against countries:", keyword);
     if (uniqueCountries.includes(capitalize(keyword))) {
       queryOptions.country_name = capitalize(keyword);
       matched = true;
@@ -238,15 +234,10 @@ export function ParseSearchQuery(query: SearchQuery) {
     .toLocaleLowerCase()
     .match(/(above|over|older\s+than|at\s+least)\s+(\d+)/);
   if (aboveMatch) {
-    console.log("Matched age condition keyword:", aboveMatch[1]);
     if (aboveMatch[1] === "at least") {
       ageOptions[Op.gte] = parseInt(aboveMatch[2]!, 10);
       matched = true;
     } else {
-      console.log(
-        "Setting ageOptions[Op.gt] to:",
-        parseInt(aboveMatch[2]!, 10),
-      );
       delete ageOptions[Op.gte];
       delete ageOptions[Op.lte];
       ageOptions[Op.gt] = parseInt(aboveMatch[2]!, 10);
@@ -280,16 +271,6 @@ export function ParseSearchQuery(query: SearchQuery) {
     queryOptions.age = ageOptions;
 
   options.where = queryOptions;
-
-  console.log("queryOptions:", JSON.stringify(queryOptions, null, 2));
-  console.log("options:", JSON.stringify(options, null, 2));
-  console.log("ageOptions:", ageOptions); // separate — Symbols don't show in JSON.stringify
-  console.log("ageOptions keys:", Object.getOwnPropertySymbols(ageOptions));
-  console.log("ageOptions gte:", ageOptions[Op.gte]);
-  console.log("ageOptions lte:", ageOptions[Op.lte]);
-  console.log("ageOptions gt:", ageOptions[Op.gt]);
-  console.log("ageOptions lt:", ageOptions[Op.lt]);
-  console.log("ageOptions eq:", ageOptions[Op.eq]);
 
   return { safePage, safeLimit, options };
 }

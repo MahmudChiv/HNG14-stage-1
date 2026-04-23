@@ -1,13 +1,11 @@
 # HNG14 Stage 1 - Name Profiler API
 
-An API service that takes a name and asynchronously leverages external APIs (Genderize, Agify, Nationalize) to profile the predicted gender, age, and nationality of that name. This demographic data is securely stored in a PostgreSQL database using the Sequelize ORM, preventing redundant API calls.
+An API service providing dynamic querying and filtering of demographic profile data (gender, age, age group, and nationality). Data is securely persisted in a PostgreSQL database using the Sequelize ORM, allowing comprehensive fetching and natural language search capabilities.
 
 ## Features
 
-- **Profile Generation:** Predict demographic information (gender, age, age group, and nationality) based on a given name.
-- **Data Persistence:** Records are intelligently cached/saved in PostgreSQL to optimize performance and reduce external dependency reads.
-- **RESTful Endpoints:** Standard GET, POST, and DELETE endpoints are exposed for easy integration.
-- **Dynamic Filtering:** Fetch multiple profiles with query filters such as `gender`, `country_id`, and `age_group`.
+- **Dynamic Filtering:** Fetch multiple profile records with robust query filters such as `gender`, `country_id`, `min_age`, `max_age`, `sort_by` and more.
+- **Natural Language Parsing:** Search profile records using powerful conversational string queries like *"young females from Canada"* or *"males older than 25"*.
 - **TypeScript Architecture:** Robust, maintainable, and type-safe backend infrastructure using Express and TypeScript.
 
 ## Tech Stack
@@ -78,28 +76,41 @@ Database synced...
 - **GET** `/`
 - **Response:** `API is running 🚀`
 
-### 2. Create / Fetch Profile
-Predicts the profile of a name or fetches it if it's already in the database.
-- **POST** `/api/profiles`
-- **Body payload:**
-  ```json
-  {
-    "name": "Jane"
-  }
-  ```
-- **Response:** Returns the created profile including `age`, `age_group`, `gender`, `country_id`, and their respective probabilities.
-
-### 3. Get Multiple Profiles (with optional filters)
+### 2. Get Profiles (with dynamic filters)
 - **GET** `/api/profiles`
-- **Query Parameters (Optional):** `gender` (male/female), `country_id`, `age_group` (child/teenager/adult/senior)
-- **Example Usage:** `/api/profiles?gender=female&age_group=adult`
+- **Query Parameters (Optional):** `gender` (male/female), `country_id`, `age_group`, `min_age`, `max_age`, `min_gender_probability`, `min_country_probability`, `sort_by`, `order`, `page`, `limit`.
+- **Example Usage:** `/api/profiles?gender=female&age_group=adult&sort_by=age&order=desc`
 
-### 4. Get a Specific Profile by ID
-- **GET** `/api/profiles/:id`
-- **Path Parameter:** `id` (The existing profile's ID/UUID)
-- **Response:** Detailed profile data for the specified ID.
+### 3. Search Profiles (Natural Language)
+- **GET** `/api/profiles/search?q=your query`
+- **Query Parameter:** `q` (The natural language query string)
+- **Example Usage:** `/api/profiles/search?q=male adults older than 25 from France`
 
-### 5. Delete a Profile
-- **DELETE** `/api/profiles/:id`
-- **Path Parameter:** `id` (The existing profile's ID/UUID)
-- **Response:** `204 No Content` upon successful deletion.
+---
+
+## 🔍 Parser Approach
+
+The natural language search endpoint (`/api/profiles/search`) processes textual queries (e.g., "young females from Canada") by breaking them down into searchable database parameters. The approach uses a **Keyword Extraction & Regex Matching** strategy: 
+
+1. **Tokenization:** The user query `q` is split into individual tokens based on whitespace.
+2. **Dictionary Matching:** 
+   - **Gender:** Iterates through words to find matches against a pre-defined `GENDER_MAP` containing synonyms like "boy", "men", "females", etc. It intelligently drops gender filters if contradictory phrases like "men and women" are detected.
+   - **Age Groups:** Uses an `AGE_GROUP_MAP` to translate words like "young", "youth", "teenager", "seniors", "elderly" into specific `age_group` string categories or explicit `[min_age, max_age]` tuples. 
+   - **Country:** Capitalizes keywords and matches them against a locally imported dataset of recognizable countries.
+3. **Regex Pattern Recognition:** Extracts specific relational age boundaries using grouped regular expressions:
+   - `/(above|over|older than|at least) (\d+)/` -> Translates to `>=`, `>` SQL operations.
+   - `/(below|under|younger than|at most) (\d+)/` -> Translates to `<=`, `<` SQL operations.
+   - `/aged (\d+)/` -> Translates to exact `=` SQL operation.
+4. **SQL Query Generation:** Compiles the successfully extracted parameters into an optimized Sequelize SQL query using `Op` operators.
+
+---
+
+## ⚠️ Limitations
+
+While the regex and keyword-based parser is fast and addresses the majority of common profiling queries, it has several limitations inherent to stateless matching parsers:
+
+1. **Lack of NLP Context (No True Understanding):** The parser operates on keyword presence rather than semantic context or negations. A query like *"people who are not male"* will misinterpret "male" as the target and ignore the "not", returning the exact opposite of the user's intent.
+2. **Strict Spacing & Multi-Word Countries:** Since tokenization splits strictly by single whitespaces (`\s+`), multi-word entity names (e.g., "United States", "New Zealand") or hyphenated parameters may not match the dictionary properly because they are processed as detached tokens ("United" and "States").
+3. **Single Filter Constraint:** Due to the loop-breaking optimization (`break;`), the parser stops at the **first matching token** for each demographic category. Asking for *"males from Canada and Germany"* will only apply the geographic filter for the first match ("Canada"). 
+4. **Rigid Syntax for Numbers:** Phrases like *"aged twenty"* won't be processed accurately because the regex explicitly looks for numeric digits (`\d+`) rather than spelled-out numeric strings.
+5. **Exact Match Vulnerability:** Misspellings, geographical abbreviations (e.g., "US", "UK"), or varied capitalizations in countries that fall outside the explicitly defined dataset format will fail to be recognized as filters.
