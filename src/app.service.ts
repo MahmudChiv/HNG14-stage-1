@@ -6,6 +6,7 @@ import path from "path";
 import fs from "fs";
 import { validationResult } from "express-validator";
 import { Request } from "express";
+import countries from "./desPath.json";
 
 const GENDER_MAP: Record<string, string> = {
   male: "male",
@@ -42,9 +43,9 @@ const AGE_GROUP_MAP: Record<
 
 // /api/profiles
 export function filterProfiles(req: Request<{}, {}, {}, ProfileQueryBody>) {
-  const errors = validationResult(req)
+  const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    console.error(errors.array().map((e) => e.msg))
+    console.error(errors.array().map((e) => e.msg));
     throw new AppError("Invalid parameter type", 400);
   }
   const {
@@ -217,14 +218,7 @@ export function ParseSearchQuery(query: SearchQuery) {
     }
   }
 
-  const filePath = path.join(__dirname, "seed_profiles.json");
-  const filecontent = fs.readFileSync(filePath, "utf-8");
-  const rawData = JSON.parse(filecontent).profiles;
-  const countries = rawData.map((profile: any) =>
-    profile.country_name.toLocaleLowerCase(),
-  );
-  const u = [...new Set(countries)];
-  const uniqueCountries = u.map((country) => country);
+  const uniqueCountries = countries;
   const capitalize = (str: string) => {
     return str.charAt(0).toUpperCase() + str.slice(1);
   };
@@ -232,7 +226,7 @@ export function ParseSearchQuery(query: SearchQuery) {
   // Parsing the country
   for (const keyword of keywords!) {
     console.log("Checking keyword against countries:", keyword);
-    if (uniqueCountries.includes(keyword.toLocaleLowerCase())) {
+    if (uniqueCountries.includes(capitalize(keyword))) {
       queryOptions.country_name = capitalize(keyword);
       matched = true;
       break;
