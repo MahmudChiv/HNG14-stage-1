@@ -10,10 +10,10 @@ interface UserAttributes {
   name: string;
   gender: string;
   gender_probability: number;
-  sample_size: number;
   age: number;
   age_group: string;
   country_id: string;
+  country_name: string;
   country_probability: number;
   created_at: Date;
 }
@@ -29,7 +29,7 @@ interface UserCreationAttributes extends Optional<
 /**
  * 3. Define Model
  */
-export class User
+export class Profile
   extends Model<UserAttributes, UserCreationAttributes>
   implements UserAttributes
 {
@@ -37,10 +37,10 @@ export class User
   public name!: string;
   public gender!: string;
   public gender_probability!: number;
-  public sample_size!: number;
   public age!: number;
   public age_group!: string;
   public country_id!: string;
+  public country_name!: string;
   public country_probability!: number;
   public created_at!: Date;
 }
@@ -48,7 +48,7 @@ export class User
 /**
  * 4. Initialize Model
  */
-User.init(
+Profile.init(
   {
     id: {
       type: DataTypes.UUID,
@@ -57,6 +57,7 @@ User.init(
     },
     name: {
       type: DataTypes.STRING,
+      unique: true,
       allowNull: false,
     },
     gender: {
@@ -65,9 +66,6 @@ User.init(
     gender_probability: {
       type: DataTypes.FLOAT,
     },
-    sample_size: {
-      type: DataTypes.INTEGER,
-    },
     age: {
       type: DataTypes.INTEGER,
     },
@@ -75,6 +73,9 @@ User.init(
       type: DataTypes.STRING,
     },
     country_id: {
+      type: DataTypes.STRING,
+    },
+    country_name: {
       type: DataTypes.STRING,
     },
     country_probability: {
@@ -86,8 +87,8 @@ User.init(
     },
   },
   {
-    sequelize, 
-    tableName: "users",
-    timestamps: false, 
+    sequelize,
+    tableName: "profiles",
+    timestamps: false,
   },
 );
