@@ -1,4 +1,5 @@
 import { Sequelize } from "sequelize-typescript";
+import { User } from "../models/user.model";
 import dotenv from "dotenv";
 dotenv.config();
 

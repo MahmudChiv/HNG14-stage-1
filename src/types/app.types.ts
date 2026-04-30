@@ -1,3 +1,8 @@
+export interface JwtPayload {
+  id: string;
+  role: string;
+}
+
 export interface ProfileQueryBody {
   gender?: string;
   age_group?: string;
@@ -12,8 +17,12 @@ export interface ProfileQueryBody {
   limit?: number;
 }
 
+export interface ExportProfile extends ProfileQueryBody {
+  format?: "csv";
+}
+
 export interface SearchQuery {
-  q: string;
+  q?: string;
   limit?: number;
   page?: number;
 }
