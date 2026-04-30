@@ -119,13 +119,13 @@ export const getGithubCallback = async (req: Request, res: Response) => {
       .cookie("access_token", accessToken, {
         httpOnly: true,
         secure: true,
-        sameSite: "lax",
+        sameSite: "none",
         maxAge: 3 * 60 * 1000,
       })
       .cookie("refresh_token", refreshToken, {
         httpOnly: true,
         secure: true,
-        sameSite: "lax",
+        sameSite: "none",
         maxAge: 5 * 60 * 1000,
       })
       .redirect(`${process.env.FRONTEND_URL}/auth/success`);
@@ -161,13 +161,13 @@ export const refresh = async (req: Request, res: Response) => {
       .cookie("accessToken", accessToken, {
         httpOnly: true,
         secure: true,
-        sameSite: "lax",
+        sameSite: "none",
         maxAge: 3 * 60 * 1000,
       })
       .cookie("refreshToken", newRefreshToken, {
         httpOnly: true,
         secure: true,
-        sameSite: "lax",
+        sameSite: "none",
         maxAge: 5 * 60 * 1000,
       })
       .json({
