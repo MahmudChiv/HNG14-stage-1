@@ -1,5 +1,5 @@
 import { DataTypes, Model, Optional } from "sequelize";
-import { sequelize } from "./db.config";
+import { sequelize } from "../config/db.config";
 import { v7 as uuidv7 } from "uuid";
 
 /**

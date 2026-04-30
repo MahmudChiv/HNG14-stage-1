@@ -32,3 +32,12 @@ export const getProfilesQueriesValidation = [
 
   query("order").optional().isString().withMessage("order must be string"),
 ];
+
+export const exportProfileQueriesValidation = [
+  ...getProfilesQueriesValidation,
+  query("format")
+    .notEmpty()
+    .withMessage("Format required")
+    .equals("csv")
+    .withMessage("Format must be csv"),
+];

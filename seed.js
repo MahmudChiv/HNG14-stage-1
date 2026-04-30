@@ -13,15 +13,19 @@ async function copyFileData(despath) {
     const rawData = JSON.parse(filecontent).profiles;
     // console.log(rawData)
 
-    const countries = rawData.map((profile) =>
-      profile.country_name.toLocaleLowerCase(),
-    );
-    const u = [...new Set(countries)];
-    const capitalize = (str) => {
-      return str.charAt(0).toUpperCase() + str.slice(1);
-    };
-    const uniqueCountries = u.map((country) => capitalize(country));
-    console.log(uniqueCountries);
+    const countries = rawData.map((profile) => ({
+      country_id: profile.country_id,
+      country_name: profile.country_name,
+    }));
+
+    const unique = new Map();
+    countries.forEach((country) => {
+      if (!unique.has(country.country_id))
+        unique.set(country.country_id, country);
+    });
+
+    const uniqueCountries = Array.from(unique.values())
+    console.log(uniqueCountries.length);
 
     // write file
     await writeFile(despath, JSON.stringify(uniqueCountries, null, 2), "utf8");
@@ -31,4 +35,48 @@ async function copyFileData(despath) {
   }
 }
 
-copyFileData("./src/desPath.json");
+copyFileData("./src/destPath.json");
+
+
+
+
+// // src/api/axiosInstance.ts
+// import axios from 'axios';
+
+// const api = axios.create({
+//   baseURL: 'http://localhost:3000',
+//   withCredentials: true, // sends cookies automatically
+// });
+
+// // Intercept every response
+// api.interceptors.response.use(
+//   (response) => response, // success, do nothing
+
+//   async (error) => {
+//     const originalRequest = error.config;
+
+//     // If 401 and we haven't retried yet
+//     if (error.response?.status === 401 && !originalRequest._retry) {
+//       originalRequest._retry = true; // prevent infinite loop
+
+//       try {
+//         // Call refresh — cookie is sent automatically
+//         const res = await api.post('/auth/refresh');
+//         const newAccessToken = res.data.accessToken;
+
+//         // Update the header and retry original request
+//         originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+//         return api(originalRequest);
+
+//       } catch (refreshError) {
+//         // Refresh failed — force logout
+//         window.location.href = '/login';
+//         return Promise.reject(refreshError);
+//       }
+//     }
+
+//     return Promise.reject(error);
+//   }
+// );
+
+// export default api;
