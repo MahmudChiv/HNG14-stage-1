@@ -5,8 +5,10 @@ import appRoutes from "./routes/api/api.profile";
 import { sequelize } from "./config/db.config";
 import session from "express-session";
 import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
 import { JwtPayload } from "./types/app.types";
+import { authLimiter, apiLimiter } from "./middlewares/rateLimit.middleware";
+import morgan from "morgan";
+import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
@@ -18,6 +20,7 @@ app.use(
     credentials: true, // ← required for cookies to work cross-origin
   }),
 );
+app.use(morgan(":method :url :status :response-time ms"));
 app.use(cookieParser());
 app.use(
   session({
@@ -32,6 +35,8 @@ app.use(
 );
 app.use("/auth", authRoutes);
 app.use("/api", appRoutes);
+app.use("/auth", authLimiter);
+app.use("/api", apiLimiter);
 
 declare global {
   namespace Express {
