@@ -116,13 +116,13 @@ export const getGithubCallback = async (req: Request, res: Response) => {
     delete req.session.state;
 
     return res
-      .cookie("access_token", accessToken, {
+      .cookie("accessToken", accessToken, {
         httpOnly: true,
         secure: true,
         sameSite: "none",
         maxAge: 3 * 60 * 1000,
       })
-      .cookie("refresh_token", refreshToken, {
+      .cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: true,
         sameSite: "none",
@@ -172,8 +172,8 @@ export const refresh = async (req: Request, res: Response) => {
       })
       .json({
         status: "success",
-        access_token: accessToken,
-        refresh_token: newRefreshToken,
+        accessToken: accessToken,
+        refreshToken: newRefreshToken,
       });
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
@@ -247,8 +247,8 @@ export const exchangeCliToken = async (req: Request, res: Response) => {
     // ✅ For CLI: return tokens as JSON, NOT as cookies
     return res.json({
       status: "success",
-      access_token: accessToken,
-      refresh_token: refreshToken,
+      accessToken,
+      refreshToken,
       user: {
         username: user.username,
         email: user.email,
