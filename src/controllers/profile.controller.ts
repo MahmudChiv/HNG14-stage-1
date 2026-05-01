@@ -137,7 +137,7 @@ export const getSingleProfile = async (
 
     const { id } = req.params;
     const profile = await Profile.findByPk(id);
-    return res.status(200).json({ status: "success", profile });
+    return res.status(200).json({ status: "success", data: profile });
   } catch (error) {
     console.error("Error fetching the profile", error);
     return res
