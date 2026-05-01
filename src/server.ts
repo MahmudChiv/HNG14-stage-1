@@ -17,10 +17,21 @@ app.set("trust proxy", 1);
 app.use(express.json());
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL || "http://localhost:5173", "http://localhost:5173"],
+    origin: [
+      process.env.FRONTEND_URL || "http://localhost:5173",
+      "http://localhost:5173",
+    ],
     credentials: true,
+    allowedHeaders: [
+      // 👈 add this
+      "Content-Type",
+      "Authorization",
+      "x-api-version",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   }),
 );
+app.options("*", cors());
 app.use(morgan(":method :url :status :response-time ms"));
 app.use(cookieParser());
 app.use(
@@ -34,10 +45,10 @@ app.use(
     },
   }),
 );
-app.use("/auth", authRoutes);
-app.use("/api", appRoutes);
 app.use("/auth", authLimiter);
 app.use("/api", apiLimiter);
+app.use("/auth", authRoutes);
+app.use("/api", appRoutes);
 
 declare global {
   namespace Express {
