@@ -18,11 +18,6 @@ export const apiLimiter = rateLimit({
   max: 60,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => {
-    // Rate limit per authenticated user, not per IP
-    // This way CLI and frontend users each get their own 60/min bucket
-    return (req as any).user?.id || req.ip;
-  },
   message: {
     status: "error",
     message: "Too many requests, please try again later.",
