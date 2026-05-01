@@ -12,7 +12,7 @@ export const authenticate = (
   try {
     const token = req.headers.authorization?.startsWith("Bearer")
       ? req.headers.authorization?.split(" ")[1]
-      : req.cookies?.access_token;
+      : req.cookies?.accessToken;
 
     if (!token)
       return res

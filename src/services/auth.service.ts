@@ -29,7 +29,7 @@ export const invalidateToken = async (req: Request) => {
 };
 
 export const  issueNewToken = async (req: Request) => {
-  const token = req.cookies?.refreshToken;
+  const token = req.cookies?.refreshToken || req.body?.refreshToken;
   if (!token) throw new AppError("No refresh token", 401);
 
   const decoded = jwt.verify(
